@@ -112,3 +112,7 @@ h1{
 	width: 10%;
 	height: 90%;
 }
+
+.game_enviroment_variables{
+	display: none;
+}
