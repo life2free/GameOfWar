@@ -16,20 +16,45 @@
             <!-- <div style="width: 20%;"></div> -->
             <button id="btn_quitGame" class="buttons" type="button" onclick="quitGame()" disabled="none">Quit Game</button>
         </div>
+        <div class="game_option">
+            <div>
+                <span style="color: red;font-weight: 900;">Option</span>  |
+                    Speed:<input type="radio" name="speed" value="1"/>slow
+                    <input type="radio" name="speed" value="2" checked>normal
+                    <input type="radio" name="speed" value="3">fast
+            </div>
+            <div>
+                Mode:<input type="radio" name="mode" value="1" checked>manual
+                <input type="radio" name="mode" value="2">automatic
+            </div>
+        </div>
         <div class="deck">
+            <div class="player_info">
+                <img class="player_photo" src="./img/photo1.png">
+                <p id="opponent_name" class="player_name"></p>
+            </div>
+            <p class="opponent_deck_cards_count" id="opponent_deck_cards_count"></p>
+            <div id="opponent_deck" class="player_deck">
+                <img id="opponent_deck_card_img" class="player_card_img" src="" alt="">
+                <img id="opponent_deck_show_card_img" class="player_card_img" src="" alt="">
+            </div>
             
-            <div id="player1_deck" class="player_deck">
-                <img id="player1_deck_card_img" class="player_card_img" src="" alt="">
-                <img id="player1_deck_show_card_img" class="player_card_img" src="" alt="">
-            </div>
             <div id="game_deck" class="game_deck">
-                <img id="player1_card_img" class="player_card_img" src="" alt="">
-                <img id="hidden_card_img" class="player_card_img" src="" alt="">
-                <img id="player2_card_img" class="player_card_img" src="" alt="">
+                <p class="game_deck_opponent_cards_count" id="game_deck_opponent_cards_count"></p>
+                <img id="opponent_card_img" class="player_card_img" src="" alt="">
+                <img id="game_deck_card_back_img" class="player_card_img" src="" alt="">
+                <img id="self_card_img" class="player_card_img" src="" alt="">
+                <p class="game_deck_self_cards_count" id="game_deck_self_cards_count"></p>
             </div>
-            <div id="player2_deck" class="player_deck">
-                <img id="player2_deck_show_card_img" class="player_card_img" src="" alt="">
-                <img id="player2_deck_card_img" class="player_card_img" src="" alt="">
+            
+            <div id="self_deck" class="player_deck">
+                <img id="self_deck_show_card_img" class="player_card_img" src="" alt="">
+                <img id="self_deck_card_img" onclick="clickDrawCardToDeck()" class="player_card_img" src="" alt="">
+            </div>
+            <p class="self_deck_cards_count" id="self_deck_cards_count"></p>
+            <div class="player_info">
+                <img class="player_photo" src="./img/photo2.png">
+                <p id="self_name" class="player_name"></p>
             </div>
         </div>
     </div>
