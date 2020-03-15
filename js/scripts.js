@@ -34,10 +34,39 @@ const CardBackImgName = "red_back.png"
 const CardBackImgUrl = ImageAbsolutePath + CardBackImgName;
 
 //the timeout array, the values are some specified number of milliseconds
-const TimeOutArray=[1500, 1000, 100]
+const TimeOutArray=[1500, 800, 100]
 
 //when it's war, player should draw 4 cards to deck
 const DrawCardsCountWhenWar = 4
+
+
+
+//default timeout value:1000milliseconds = 1 second
+let timeout = 1000
+
+
+/**
+ * mode is refer to manual or automatic draw card for self
+ * mode=0(manual) indicate user self should click the card image to draw a card to deck
+ * mode=1(automatic) indicate it's automatic to draw a card to deck
+ */
+let mode = 0 
+
+/**
+ * player self(own) click card to draw card to deck
+ * if it's normal round, canClickToDrawCardTimes=1,the self player only can click 1 time to draw 1 card to deck,
+ * if it's war round, canClickToDrawCardTimes=4,the self player should click 4 times to draw 4 cards to deck.
+*/
+let canClickToDrawCardTimes = 1;
+
+//tag the round is war or not 
+let isWar = false;
+
+//tag game is over or not
+let isGameOver = false
+
+//define the timer set interval variable for automatic mode
+let autoRunInterval 
 
 /****** define class ********** */
 //define Deck class
@@ -96,6 +125,12 @@ class Player{
     }
 }
 
+
+//define instances of class Deck,Player for the game
+let deck = new Deck();
+let opponent = new Player();
+let self = new Player();
+
 //the game manage class
 class GameManage{
     constructor(){
@@ -105,13 +140,13 @@ class GameManage{
     static DoSettingBeforeStartGame(){
         //get the speed value to set timeout value
         let speedRadios = document.getElementsByName("speed")
-        let speedStr = GameManage.GetRadioCheckedValue(speedRadios)
+        let speedStr = this.GetRadioCheckedValue(speedRadios)
         let timeoutIndex = parseInt(speedStr)
         timeout = TimeOutArray[timeoutIndex]
 
         //get the mode value
         let modeRadios = document.getElementsByName("mode")
-        let modeStr = GameManage.GetRadioCheckedValue(modeRadios)
+        let modeStr = this.GetRadioCheckedValue(modeRadios)
         mode = parseInt(modeStr)
 
         //disabled the speed and mode radio options
@@ -155,7 +190,15 @@ class GameManage{
         game_deck_card_back_img.style.visibility = "hidden"  
 
         
-        GameManage.DisplayTipInfo("Click on your top card to play it")
+        if(!mode){
+            //if it's manual mode
+            this.DisplayTipInfo("Click on your top card to play it")
+            //add the listener clickDrawCardToDeck() for clicking the self player's card
+            document.getElementById("self_deck_card_img").addEventListener("click", clickDrawCardToDeck)
+        }else{
+            //if it's automatic mode, disappear the tip element on game page
+            document.getElementById("gameTips").style.visibility = "hidden" 
+        }
     }
 
     //deal the cards to players
@@ -186,7 +229,7 @@ class GameManage{
         let card = gamePlayer.cards.shift()
         this.DisplayCardsCount(playerDeckCardsCntElementId,gamePlayer.cards.length)
         gamePlayer.cardsOnDeck.push(card)
-        this.DisplayCardImage(showCardImgElementId, imgIsUp ? card.imgUrl : CardBackImgUrl)
+        this.DisplayCardImage(showCardImgElementId, (imgIsUp ? card.imgUrl : CardBackImgUrl))
         this.DisplayCardsCount(gameDeckPlayerCardsCntElementId,gamePlayer.cardsOnDeck.length)
     }
 
@@ -224,7 +267,7 @@ class GameManage{
     //display cards count on game page
     static DisplayCardsCount(displayCardsCountElementId, cardsCount){
         let displayCardsCountElement = document.getElementById(displayCardsCountElementId)
-        displayCardsCountElement.innerText = cardsCount>0 ? cardsCount : ""
+        displayCardsCountElement.innerText = (cardsCount>0 ? cardsCount : "")
     }
 
     //get radio element checked value
@@ -257,37 +300,6 @@ class GameManage{
         document.getElementById("gameTips").value = tipInfo
     }
 }
-
-//define instances of class Deck,Player for the game
-let deck = new Deck();
-let opponent = new Player();
-let self = new Player();
-
-//default timeout value:1000milliseconds = 1 second
-let timeout = 1000
-
-
-/**
- * mode is refer to manual or automatic draw card for self
- * mode=0 indicate user self should click the card image to draw a card to deck
- * mode=1 indicate it's automatic to draw a card to deck
- */
-let mode = 0 
-
-/**
- * player self(own) click card to draw card to deck
- * if it's normal round, canClickToDrawCardTimes=1,the self player only can click 1 time to draw 1 card to deck,
- * if it's war round, canClickToDrawCardTimes=4,the self player should click 4 times to draw 4 cards to deck.
-*/
-let canClickToDrawCardTimes = 1;
-
-//tag the round is war or not 
-let isWar = false;
-
-//tag game is over or not
-let isGameOver = false
-
-
 
 
 /**
@@ -327,8 +339,50 @@ function startGame(){
     //deal the cards to two players
     GameManage.DealCardsToPlayers(deck, opponent, self)
 
-    //player opponent draw a card to deck automatically
-    autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
+    //run the game
+    run()
+}
+
+function run(){
+    if(!mode){
+        //manual mode
+        //player opponent draw a card to deck automatically
+        autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
+    }else{
+        //automatic mode
+        // alert(timeout)
+        autoRunInterval = setInterval("autoRun()", timeout)
+    }
+}
+
+//run the game in automatic mode at timeout intervals
+function autoRun(){
+    if(!isGameOver){
+        // setInterval("autoGameRound()", timeout)
+        autoGameRound()
+    }else{
+        //if game is over, the clear the time set
+        clearInterval(autoRunInterval)
+    }
+}
+
+//run the game each round automatically
+function autoGameRound(){
+    if(!isWar){
+        GameManage.DrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
+        GameManage.DrawCardToDeck(self,"self_card_img","self_deck_cards_count","game_deck_self_cards_count")
+        compare()
+    }else{
+        for(let i=1; i<DrawCardsCountWhenWar; i++){
+            GameManage.DrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count",0)
+        }
+        GameManage.DrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
+
+        for(let i=1; i<DrawCardsCountWhenWar; i++){
+            GameManage.DrawCardToDeck(self,"self_card_img","self_deck_cards_count","game_deck_self_cards_count",0)
+        }
+        GameManage.DrawCardToDeck(self,"self_card_img","self_deck_cards_count","game_deck_self_cards_count")
+    }
 }
 
 //draw a card to deck automatically
@@ -358,7 +412,7 @@ function clickDrawCardToDeck(){
             GameManage.DisplayTipInfo("Wait...")
             setTimeout(function() {
                 GameManage.DisplayTipInfo("Click on your top card to play it")
-            },500)
+            },timeout)
         }
     }
 }
@@ -368,54 +422,8 @@ function compare(){
     let self_topcard_ondeck = GameManage.GetLastCard(self.cardsOnDeck)
     if(opponent_topcard_ondeck.score>0 && self_topcard_ondeck.score>0){
         let compareValue = GameManage.CompareCardsScore(opponent_topcard_ondeck,self_topcard_ondeck)
-        
-        if(compareValue>0){
-            isWar = false
-            GameManage.ShiftCardsToPlayer(self.cardsOnDeck,opponent.cards,"game_deck_self_cards_count","opponent_deck_cards_count")
-            GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,opponent.cards,"game_deck_opponent_cards_count","opponent_deck_cards_count")
-            GameManage.LogGameRoundInfo(opponent_topcard_ondeck,opponent.cards.length+opponent.cardsOnDeck.length,
-                self_topcard_ondeck,self.cards.length+self.cardsOnDeck.length,compareValue)
-            setTimeout(function() {
-            GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
-                    },timeout)
-            //opponent win in the round
-            if(self.cards.length==0){
-                console.log("opponent win the game")
-                isGameOver = true
-            }else{
-                let opponent_deck_show_card = opponent.cards[opponent.cards.length-1]
-                let opponent_deck_show_card_img = document.getElementById("opponent_deck_show_card_img")
-                setTimeout(function() {
-                    opponent_deck_show_card_img.setAttribute("src",opponent_deck_show_card.imgUrl)
-                },timeout)
-                canClickToDrawCardTimes = 1
-                autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
-            }
-        }else if(compareValue<0){
-            isWar = false
-            GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,self.cards,"game_deck_opponent_cards_count","self_deck_cards_count")
-            GameManage.ShiftCardsToPlayer(self.cardsOnDeck,self.cards,"game_deck_self_cards_count","self_deck_cards_count")
-            GameManage.LogGameRoundInfo(opponent_topcard_ondeck,opponent.cards.length+opponent.cardsOnDeck.length,
-                self_topcard_ondeck,self.cards.length+self.cardsOnDeck.length,compareValue)
-            setTimeout(function() {
-                    GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
-                    },timeout)
-            //self win in the round
-            if(opponent.cards.length == 0){
-                console.log("you win the game")
-                isGameOver = true
-            }else{
-                let self_deck_show_card = self.cards[self.cards.length-1]
-                let self_deck_show_card_img = document.getElementById("self_deck_show_card_img")
-                setTimeout(function() {
-                    self_deck_show_card_img.setAttribute("src",self_deck_show_card.imgUrl)
-                },timeout)
-                canClickToDrawCardTimes = 1
-                autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
-            }
-        }else{
+        if(compareValue==0){
             //it's war in the round
-            // alert("war");
             GameManage.DisplayTipInfo("War... you need play 4 more cards to finish the war")
             isWar = true;
             canClickToDrawCardTimes = DrawCardsCountWhenWar
@@ -424,16 +432,99 @@ function compare(){
             if(opponent.cards.length<DrawCardsCountWhenWar || self.cards.length<DrawCardsCountWhenWar){
                 isGameOver = true
                 if(opponent.cards.length<DrawCardsCountWhenWar){
-                    console.log("you win the game")
+                    if(opponent.cards.length == 0){
+                        GameManage.RemoveCardImages(["opponent_deck_card_img","opponent_deck_show_card_img"])
+                    }
+                    GameManage.DisplayTipInfo("WoW...you win the game")
+                    console.log("You win the game")
+                    alert("you win the game")
                 }else{
+                    if(self.cards.length==0){
+                        GameManage.RemoveCardImages(["self_deck_show_card_img","self_deck_card_img"])
+                    }
+                    GameManage.DisplayTipInfo("You have no more cards to play the war. Opponent win the game")
                     console.log("opponent win the game")
+                    alert("opponent win the game")
                 }
             }else{
-                //draw 4 opponent cards to deck, on deck, 1-3 cards face down, the fourth card face up
-                for(let i=1; i<DrawCardsCountWhenWar; i++){
-                    autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count",0)
+                if(!mode){
+                    //draw 4 opponent cards to deck, on deck, 1-3 cards face down, the fourth card face up
+                    for(let i=1; i<DrawCardsCountWhenWar; i++){
+                        autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count",0)
+                    }
+                    autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
                 }
-                autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
+            }
+        }else{
+            isWar = false
+            if(compareValue>0){
+                //opponent win in the round
+                GameManage.ShiftCardsToPlayer(self.cardsOnDeck,opponent.cards,"game_deck_self_cards_count","opponent_deck_cards_count")
+                GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,opponent.cards,"game_deck_opponent_cards_count","opponent_deck_cards_count")
+                let opponent_deck_show_card_img = document.getElementById("opponent_deck_show_card_img")
+                opponent_deck_show_card_img.setAttribute("src",opponent_topcard_ondeck.imgUrl)
+                GameManage.LogGameRoundInfo(opponent_topcard_ondeck,opponent.cards.length+opponent.cardsOnDeck.length,
+                    self_topcard_ondeck,self.cards.length+self.cardsOnDeck.length,compareValue)
+                if(!mode){
+                    setTimeout(function() {
+                        GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
+                        canClickToDrawCardTimes = 1
+                            },timeout)
+                }else{
+                    setTimeout(function() {
+                        GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
+                            },timeout*2/3)
+                    // GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
+                }
+
+                //opponent win in the game       
+                if(self.cards.length==0){
+                    GameManage.RemoveCardImages(["self_deck_show_card_img","self_deck_card_img"])
+                    GameManage.DisplayTipInfo("you lose the game")
+                    console.log("Opponent win the game")
+                    isGameOver = true
+                    alert("Opponent win the game")
+                }else{
+                    if(!mode){
+                        setTimeout(function() {
+                            autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
+                        },timeout)
+                    }
+                }
+            }else{
+                //self win in the round
+                GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,self.cards,"game_deck_opponent_cards_count","self_deck_cards_count")
+                GameManage.ShiftCardsToPlayer(self.cardsOnDeck,self.cards,"game_deck_self_cards_count","self_deck_cards_count")
+                let self_deck_show_card_img = document.getElementById("self_deck_show_card_img")
+                self_deck_show_card_img.setAttribute("src",self_topcard_ondeck.imgUrl)
+                GameManage.LogGameRoundInfo(opponent_topcard_ondeck,opponent.cards.length+opponent.cardsOnDeck.length,
+                    self_topcard_ondeck,self.cards.length+self.cardsOnDeck.length,compareValue)
+                if(!mode){
+                    setTimeout(function() {
+                        GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
+                        canClickToDrawCardTimes = 1
+                        },timeout)
+                }else{
+                    setTimeout(function() {
+                        GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
+                            },timeout*2/3)
+                    // GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
+                }
+                
+                //self win in the game
+                if(opponent.cards.length == 0){
+                    GameManage.RemoveCardImages(["opponent_deck_card_img","opponent_deck_show_card_img"])
+                    GameManage.DisplayTipInfo("WoW...you win the game")
+                    console.log("you win the game")
+                    isGameOver = true
+                    alert("you win the game")
+                }else{
+                    if(!mode){
+                        setTimeout(function() {
+                            autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
+                        },timeout)
+                    }
+                }
             }
         }
     }
