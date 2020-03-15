@@ -280,10 +280,14 @@ class GameManage{
     }
 
     //console.log the game round info
-    static LogGameRoundInfo(opponetPlayerCard, opponetCardsCnt, selfPlayerCard, selfCardsCnt,compareValue){
-        let logInfo = (new Date().toLocaleString()).concat(" opponent:")
+    static LogGameRoundInfo(opponent,opponetPlayerCard, self, selfPlayerCard,compareValue){
+        let opponentName = opponent.name
+        let opponetCardsCnt = opponent.cards.length + opponent.cardsOnDeck.length
+        let selfName = self.name
+        let selfCardsCnt = self.cards.length + self.cardsOnDeck.length
+        let logInfo = (new Date().toLocaleString()).concat(" ").concat(opponentName).concat("(Opponent):")
             .concat(opponetPlayerCard.suit).concat(" ").concat(opponetPlayerCard.rank).concat(", has ").concat(opponetCardsCnt)
-            .concat(" cards now. ").concat("self:").concat(selfPlayerCard.suit).concat(" ").concat(selfPlayerCard.rank).concat(", has ")
+            .concat(" cards now. ").concat(opponentName).concat("(Self):").concat(selfPlayerCard.suit).concat(" ").concat(selfPlayerCard.rank).concat(", has ")
             .concat(selfCardsCnt).concat(" cards now. ")
         if(compareValue>0){
             logInfo = logInfo.concat("Opponent win!")
@@ -382,6 +386,7 @@ function autoGameRound(){
             GameManage.DrawCardToDeck(self,"self_card_img","self_deck_cards_count","game_deck_self_cards_count",0)
         }
         GameManage.DrawCardToDeck(self,"self_card_img","self_deck_cards_count","game_deck_self_cards_count")
+        compare()
     }
 }
 
@@ -427,8 +432,7 @@ function compare(){
             GameManage.DisplayTipInfo("War... you need play 4 more cards to finish the war")
             isWar = true;
             canClickToDrawCardTimes = DrawCardsCountWhenWar
-            GameManage.LogGameRoundInfo(opponent_topcard_ondeck,opponent.cards.length+opponent.cardsOnDeck.length,
-                self_topcard_ondeck,self.cards.length+self.cardsOnDeck.length,compareValue)
+            GameManage.LogGameRoundInfo(opponent,opponent_topcard_ondeck,self,self_topcard_ondeck,compareValue)
             if(opponent.cards.length<DrawCardsCountWhenWar || self.cards.length<DrawCardsCountWhenWar){
                 isGameOver = true
                 if(opponent.cards.length<DrawCardsCountWhenWar){
@@ -463,8 +467,9 @@ function compare(){
                 GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,opponent.cards,"game_deck_opponent_cards_count","opponent_deck_cards_count")
                 let opponent_deck_show_card_img = document.getElementById("opponent_deck_show_card_img")
                 opponent_deck_show_card_img.setAttribute("src",opponent_topcard_ondeck.imgUrl)
-                GameManage.LogGameRoundInfo(opponent_topcard_ondeck,opponent.cards.length+opponent.cardsOnDeck.length,
-                    self_topcard_ondeck,self.cards.length+self.cardsOnDeck.length,compareValue)
+                // GameManage.LogGameRoundInfo(opponent_topcard_ondeck,opponent.cards.length+opponent.cardsOnDeck.length,
+                //     self_topcard_ondeck,self.cards.length+self.cardsOnDeck.length,compareValue)
+                GameManage.LogGameRoundInfo(opponent,opponent_topcard_ondeck,self,self_topcard_ondeck,compareValue)
                 if(!mode){
                     setTimeout(function() {
                         GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
@@ -497,8 +502,9 @@ function compare(){
                 GameManage.ShiftCardsToPlayer(self.cardsOnDeck,self.cards,"game_deck_self_cards_count","self_deck_cards_count")
                 let self_deck_show_card_img = document.getElementById("self_deck_show_card_img")
                 self_deck_show_card_img.setAttribute("src",self_topcard_ondeck.imgUrl)
-                GameManage.LogGameRoundInfo(opponent_topcard_ondeck,opponent.cards.length+opponent.cardsOnDeck.length,
-                    self_topcard_ondeck,self.cards.length+self.cardsOnDeck.length,compareValue)
+                // GameManage.LogGameRoundInfo(opponent_topcard_ondeck,opponent.cards.length+opponent.cardsOnDeck.length,
+                //     self_topcard_ondeck,self.cards.length+self.cardsOnDeck.length,compareValue)
+                GameManage.LogGameRoundInfo(opponent,opponent_topcard_ondeck,self,self_topcard_ondeck,compareValue)
                 if(!mode){
                     setTimeout(function() {
                         GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
