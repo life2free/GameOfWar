@@ -20,18 +20,24 @@ const MaxCardScore = 14
 
 // the card rank array
 const CardRankArray = ["2","3","4","5","6","7","8","9","10","Jack","Queen","King","Ace"]
+
 // the card suit array
 const SuitsOfCard = ["Heart","Spade","Club","Diamond"]
 
 // the absolute parent path of card image
-const ImageAbsoluteParentPath = "./img/"
+const ImageAbsolutePath = "./img/"
+
 //hidden card image name
 const CardBackImgName = "red_back.png"
-//hidden card image url
-const CardBackImgUrl = ImageAbsoluteParentPath + CardBackImgName;
-//the timeout array, the values are some specified number of milliseconds
-const TimeOutArray=[1600, 800, 100]
 
+//hidden card image url
+const CardBackImgUrl = ImageAbsolutePath + CardBackImgName;
+
+//the timeout array, the values are some specified number of milliseconds
+const TimeOutArray=[5600, 800, 100]
+
+//when it's war, player should draw 4 cards to deck
+const DrawCardsCountWhenWar = 4
 
 /****** define class ********** */
 //define Deck class
@@ -55,7 +61,7 @@ class Deck{
             for(let suitIndex in SuitsOfCard){
                 let suit = SuitsOfCard[suitIndex]
                 imgName = tempRank + suit.charAt(0) + ".png"
-                imgWholePath = ImageAbsoluteParentPath + imgName
+                imgWholePath = ImageAbsolutePath + imgName
                 let card = new Card(suit, rank, score, imgWholePath)
                 this.cards.push(card)
             }
@@ -111,12 +117,19 @@ class GameManage{
 
     }
 
-    //draw a card from player to deck automatically
-    static DrawCardToDeck(gamePlayer,showCardImgElementId,playerDeckCardsCntElementId,gameDeckPlayerCardsCntElementId){
+    /**
+     * draw a card from player to deck automatically
+     * @param {*} gamePlayer 
+     * @param {*} showCardImgElementId 
+     * @param {*} playerDeckCardsCntElementId 
+     * @param {*} gameDeckPlayerCardsCntElementId 
+     * @param {*} imgIsUp 
+     */
+    static DrawCardToDeck(gamePlayer,showCardImgElementId,playerDeckCardsCntElementId,gameDeckPlayerCardsCntElementId,imgIsUp=1){
         let card = gamePlayer.cards.shift()
         this.DisplayCardsCount(playerDeckCardsCntElementId,gamePlayer.cards.length)
         gamePlayer.cardsOnDeck.push(card)
-        this.DisplayCardImage(showCardImgElementId, card.imgUrl)
+        this.DisplayCardImage(showCardImgElementId, imgIsUp ? card.imgUrl : CardBackImgUrl)
         this.DisplayCardsCount(gameDeckPlayerCardsCntElementId,gamePlayer.cardsOnDeck.length)
     }
 
@@ -165,6 +178,21 @@ class GameManage{
             }
         }
     }
+
+    //console.log the game round info
+    static LogGameRoundInfo(opponetPlayerCard, selfPlayerCard,compareValue){
+        let logInfo = ("[").concat((new Date()).toLocaleString()).concat("] opponent:")
+            .concat(opponetPlayerCard.suit).concat(" ").concat(opponetPlayerCard.rank).concat(", ")
+            .concat("self:").concat(selfPlayerCard.suit).concat(" ").concat(selfPlayerCard.rank).concat(". ")
+        if(compareValue>0){
+            logInfo = logInfo.concat("Opponent win!")
+        }else if(compareValue<0){
+            logInfo = logInfo.concat("You win!")
+        }else{
+            logInfo = logInfo.concat("It's War!")
+        }
+        console.log(logInfo)
+    }
 }
 
 //define instances of class Deck,Player for the game
@@ -184,11 +212,18 @@ let timeout = 1000
 let mode = 0 
 
 /**
- * self(own) click card to draw card to deck, 
- * after self draw a card to deck, before compare card score with opponent,
- * if self can't click card to draw a card to deck.
+ * player self(own) click card to draw card to deck
+ * if it's normal round, canClickToDrawCardTimes=1,the self player only can click 1 time to draw 1 card to deck,
+ * if it's war round, canClickToDrawCardTimes=4,the self player should click 4 times to draw 4 cards to deck.
 */
-let clickTimes = 0;
+let canClickToDrawCardTimes = 1;
+
+//tag the round is war or not 
+let isWar = false;
+
+//tag game is over or not
+let isGameOver = false
+
 
 
 
@@ -248,26 +283,33 @@ function startGame(){
 
     //deal the cards to two players
     GameManage.DealCardsToPlayers(deck, opponent, self)
+
     //player opponent draw a card to deck automatically
     autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
 }
 
-// start to play game
-function autoDrawCardToDeck(gamePlayer,showCardImgElementId,playerDeckCardsCntElementId,gameDeckPlayerCardsCntElementId){
+//draw a card to deck automatically
+function autoDrawCardToDeck(gamePlayer,showCardImgElementId,playerDeckCardsCntElementId,gameDeckPlayerCardsCntElementId,imgIsUp=1){
     setTimeout(function() {
-        GameManage.DrawCardToDeck(gamePlayer,showCardImgElementId,playerDeckCardsCntElementId,gameDeckPlayerCardsCntElementId)
+        GameManage.DrawCardToDeck(gamePlayer,showCardImgElementId,playerDeckCardsCntElementId,gameDeckPlayerCardsCntElementId,imgIsUp)
         },timeout)
 }
 
 //manual mode, click the card to draw a card to deck
 function clickDrawCardToDeck(){
-    if(clickTimes == 0){
-        GameManage.DrawCardToDeck(self,"self_card_img","self_deck_cards_count","game_deck_self_cards_count")
-        clickTimes = 1;
-        setTimeout(function() {compare()},timeout)
-        
-    }else{
-
+    if(!isGameOver){
+        if(canClickToDrawCardTimes > 0){
+            canClickToDrawCardTimes -= 1
+            let imgIsUp = canClickToDrawCardTimes>0 ? 0 : 1;
+            GameManage.DrawCardToDeck(self,"self_card_img","self_deck_cards_count","game_deck_self_cards_count",imgIsUp)
+            
+            if(canClickToDrawCardTimes==0){
+                setTimeout(function() {compare()},timeout)
+            }
+        }else{
+            console.log("please wait")
+            // alert("wait")
+        }
     }
 }
 
@@ -276,46 +318,66 @@ function compare(){
     let self_topcard_ondeck = GameManage.GetLastCard(self.cardsOnDeck)
     if(opponent_topcard_ondeck.score>0 && self_topcard_ondeck.score>0){
         let compareValue = GameManage.CompareCardsScore(opponent_topcard_ondeck,self_topcard_ondeck)
+        GameManage.LogGameRoundInfo(opponent_topcard_ondeck,self_topcard_ondeck,compareValue)
         if(compareValue>0){
+            GameManage.ShiftCardsToPlayer(self.cardsOnDeck,opponent.cards,"game_deck_self_cards_count","opponent_deck_cards_count")
+            GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,opponent.cards,"game_deck_opponent_cards_count","opponent_deck_cards_count")
+            setTimeout(function() {
+            GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
+                    },timeout)
             //opponent win in the round
             if(self.cards.length==0){
                 console.log("opponent win the game")
+                isGameOver = true
             }else{
-                GameManage.ShiftCardsToPlayer(self.cardsOnDeck,opponent.cards,"game_deck_self_cards_count","opponent_deck_cards_count")
-                GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,opponent.cards,"game_deck_opponent_cards_count","opponent_deck_cards_count")
-                setTimeout(function() {
-                    GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
-                    },timeout)
+                isWar = false
                 let opponent_deck_show_card = opponent.cards[opponent.cards.length-1]
                 let opponent_deck_show_card_img = document.getElementById("opponent_deck_show_card_img")
                 setTimeout(function() {
-                opponent_deck_show_card_img.setAttribute("src",opponent_deck_show_card.imgUrl)
+                    opponent_deck_show_card_img.setAttribute("src",opponent_deck_show_card.imgUrl)
                 },timeout)
-                clickTimes = 0
+                canClickToDrawCardTimes = 1
                 autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
             }
         }else if(compareValue<0){
+            GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,self.cards,"game_deck_opponent_cards_count","self_deck_cards_count")
+            GameManage.ShiftCardsToPlayer(self.cardsOnDeck,self.cards,"game_deck_self_cards_count","self_deck_cards_count")
+            setTimeout(function() {
+                    GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
+                    },timeout)
             //self win in the round
             if(opponent.cards.length == 0){
                 console.log("you win the game")
+                isGameOver = true
             }else{
-                GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,self.cards,"game_deck_opponent_cards_count","self_deck_cards_count")
-                GameManage.ShiftCardsToPlayer(self.cardsOnDeck,self.cards,"game_deck_self_cards_count","self_deck_cards_count")
-                setTimeout(function() {
-                    GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
-                    },timeout)
+                isWar = false
                 let self_deck_show_card = self.cards[self.cards.length-1]
                 let self_deck_show_card_img = document.getElementById("self_deck_show_card_img")
                 setTimeout(function() {
-                self_deck_show_card_img.setAttribute("src",self_deck_show_card.imgUrl)
+                    self_deck_show_card_img.setAttribute("src",self_deck_show_card.imgUrl)
                 },timeout)
-                clickTimes = 0
+                canClickToDrawCardTimes = 1
                 autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
             }
         }else{
             //it's war in the round
             alert("war");
-
+            isWar = true;
+            if(opponent.cards.length<DrawCardsCountWhenWar || self.cards.length<DrawCardsCountWhenWar){
+                isGameOver = true
+                if(opponent.cards.length<DrawCardsCountWhenWar){
+                    console.log("you win the game")
+                }else{
+                    console.log("opponent win the game")
+                }
+            }else{
+                canClickToDrawCardTimes = DrawCardsCountWhenWar
+                //draw 4 opponent cards to deck, on deck, 1-3 cards face down, the fourth card face up
+                for(let i=1; i<DrawCardsCountWhenWar; i++){
+                    autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count",0)
+                }
+                autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
+            }
         }
     }
 }
