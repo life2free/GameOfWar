@@ -118,12 +118,31 @@ hr{
 }
 
 .player_card_img{
-	/* border: 2px solid black; */
 	margin: 1% 2%;
 	width: 10%;
 	height: 90%;
 }
 
-.game_enviroment_variables{
-	display: none;
+.self_photoandtip{
+	display: grid;
+	grid-template-rows: 1fr;
+	grid-template-rows: 3fr 2fr;
+	height: 85px;
+	margin-bottom: 0;
+}
+
+.self_photo{
+	grid-row: 1;
+	grid-column: 1;
+	width: 20%;
+	margin-left: 58%;
+}
+
+.gameTips{
+	grid-row: 1;
+	grid-column: 2;
+	height: 60%;
+	background-color: #F9F900;
+	font-size: 12px;
+	font-weight: lighter;
 }
