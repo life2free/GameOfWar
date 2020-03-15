@@ -18,13 +18,16 @@
             <button id="btn_newGame" class="buttons" type="button" onclick="newGame()" style="display: none;">New Game</button>
         </div>
         <div class="game_option">
-            <div>
-                <span style="color: red;font-weight: 900;">Option</span>  |
+            <div class="game_option_title">[Option]</div>
+            <div class="game_option_speed">
+                <!-- <span style="color: red;font-weight: 900;">Option</span>  | -->
+                <!-- <div> -->
                     Speed:<input type="radio" name="speed" value="0"/>slow
                     <input type="radio" name="speed" value="1" checked>normal
                     <input type="radio" name="speed" value="2">fast
+                <!-- </div> -->
             </div>
-            <div>
+            <div class="game_option_mode">
                 Mode:<input type="radio" name="mode" value="0">manual
                 <input type="radio" name="mode" value="1" checked>automatic
             </div>
@@ -33,7 +36,7 @@
             <div class="player_info">
                 <img class="player_photo" src="./img/photo1.png">
                 <p id="opponent_name" class="player_name" style="display: none;"></p>
-                <div name="inputname"><span style="color: white;font-size: 14px;">Opponent's name: </span><input id="opponent_name_text" class="player_name_text" type="text" placeholder="Mick" maxlength="15"></div>
+                <div name="inputname" class="inputname"><span class="inputname">Opponent's name: </span><input id="opponent_name_text" class="player_name_text" type="text" placeholder="Mick" maxlength="15"></div>
             </div>
             <p class="opponent_deck_cards_count" id="opponent_deck_cards_count"></p>
             <div id="opponent_deck" class="player_deck">
@@ -61,7 +64,7 @@
                     <textarea id="gameTips" class="gameTips" rows="2" cols="20" readonly>Click Deal to start game!</textarea>
                 </div>
                 <p id="self_name" class="player_name" style="display: none;"></p>
-                <div name="inputname"><span style="color: white;font-size: 14px;">Your name: </span><input id="self_name_text" class="player_name_text" type="text" placeholder="Jack" maxlength="15"></div>
+                <div name="inputname"><span class="inputname">Your name: </span><input id="self_name_text" class="player_name_text" type="text" placeholder="Jack" maxlength="15"></div>
             </div>
         </div>
     </div>

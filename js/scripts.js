@@ -304,7 +304,6 @@ class GameManage{
 
     //display the new game button when game is over
     static DisplayNewGameButton(){
-        alert("net game button")
         document.getElementById("btn_quitGame").style.display = "none"
         document.getElementById("btn_newGame").style.display = "block"
     }
@@ -443,14 +442,14 @@ function compare(){
                         GameManage.RemoveCardImages(["opponent_deck_card_img","opponent_deck_show_card_img"])
                     }
                     GameManage.DisplayTipInfo("WoW...you win the game")
-                    console.log(self.name + "(You) win the game1")
+                    console.log(opponent.name + "(Opponent) has not enough cards to play the war. " + self.name + "(You) win the game!")
                     alert(self.name + "(You) win the game!")
                 }else{
                     if(self.cards.length==0){
                         GameManage.RemoveCardImages(["self_deck_show_card_img","self_deck_card_img"])
                     }
                     GameManage.DisplayTipInfo("You have no more cards to play the war. Opponent win the game")
-                    console.log(opponent.name + "(Opponent) win the game!")
+                    console.log(self.name + "(You) has not enough cards to play the war. " + opponent.name + "(Opponent) win the game!")
                     alert(opponent.name + "(Opponent) win the game")
                 }
                 GameManage.DisplayNewGameButton()
