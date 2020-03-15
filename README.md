@@ -1,6 +1,6 @@
 # Game Of War
 <hr>
-War is a very simple card game for two players. Much like real war it's incredibly long and pointless. It's mostly a kids game, since it relies exclusively on luck of the draw. -[cardgames](https://cardgames.io/war/#about)
+War is a very simple card game for two players. Much like real war it's incredibly long and pointless. It's mostly a kids game, since it relies exclusively on luck of the draw. -[<a href="https://cardgames.io/war/#about" target="_blank">cardgames</a>]
 
 ### Requirements
 <hr>
@@ -10,7 +10,7 @@ If there is a tie, then it's War! In the card game each player adds places the t
 ### Implement technologies
 <hr>
 1. Html<br>
-2. Css<br>
+2. CSS<br>
 3. Javascript<br>
 
 ### Features<hr>
@@ -26,3 +26,6 @@ If there is a tie, then it's War! In the card game each player adds places the t
    * Slow: 1500 milliseconds
    * Normal(default): 800 milliseconds
    * Fast: 100 milliseconds
+
+#### 3. Log information
+    Print the informations(include the suit and rank of card which be drew to compared in current round, who won the round, and how many cards each player now has.) for each round to console.
