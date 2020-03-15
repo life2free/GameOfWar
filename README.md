@@ -1,12 +1,11 @@
 # Game Of War
 <hr>
-War is a very simple card game for two players. Much like real war it's incredibly long and pointless. It's mostly a kids game, since it relies exclusively on luck of the draw.-[cardgames](https://cardgames.io/war/#about)
-
+War is a very simple card game for two players. Much like real war it's incredibly long and pointless. It's mostly a kids game, since it relies exclusively on luck of the draw.-[cardgames](https://cardgames.io/war/#about)<br/>
 ###Requirements
 <hr>
 To play, each player reveals the top card in their stack. The player who played the card with the higher rank (Aces high) takes both cards and puts them at the bottom of their stack in an arbitrary order.
 
-If there is a tie, then it's War! In the card game each player adds places the top three cards of their stack face down, and then each player reveals the top card again. Whoever wins out of the second reveal takes all of the cards, and if there is another tie the process repeats until there is a winner.
+If there is a tie, then it's War! In the card game each player adds places the top three cards of their stack face down, and then each player reveals the top card again. Whoever wins out of the second reveal takes all of the cards, and if there is another tie the process repeats until there is a winner.<br/>
 ###Implement technologies
 <hr>
 1. Html<br>
