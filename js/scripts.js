@@ -101,6 +101,63 @@ class GameManage{
     constructor(){
     }
 
+    //sets the game page's elements properties and game variables before start game
+    static DoSettingBeforeStartGame(){
+        //get the speed value to set timeout value
+        let speedRadios = document.getElementsByName("speed")
+        let speedStr = GameManage.GetRadioCheckedValue(speedRadios)
+        let timeoutIndex = parseInt(speedStr)
+        timeout = TimeOutArray[timeoutIndex]
+
+        //get the mode value
+        let modeRadios = document.getElementsByName("mode")
+        let modeStr = GameManage.GetRadioCheckedValue(modeRadios)
+        mode = parseInt(modeStr)
+
+        //disabled the speed and mode radio options
+        speedRadios.forEach(speed=>speed.disabled = true)
+        modeRadios.forEach(mode=>mode.disabled = true)
+
+        //get the players' name
+        let opponentName = document.getElementById("opponent_name_text").value
+        if(opponentName == null || opponentName.trim() == "" ){
+            opponentName = "Mick"
+        }
+        opponentName = opponentName.trim()
+        opponent.name = opponentName
+
+        let selfName = document.getElementById("self_name_text").value
+        if(selfName == null || selfName.trim() =="" ){
+            selfName = "Jack"
+        }
+        selfName = selfName.trim()
+        self.name = selfName
+
+        //disappear the players' name text elements on the game page 
+        let inputname = document.getElementsByName("inputname")
+        inputname.forEach(item=>item.style.display="none")
+
+        //display the opponent's name on game page
+        let opponent_name = document.getElementById("opponent_name")
+        opponent_name.innerText = opponent.name.concat(" (Opponent)")
+        opponent_name.style.display = "block"
+        //display the self's name on game page
+        let self_name = document.getElementById("self_name")
+        self_name.innerText = self.name.concat(" (You)")
+        self_name.style.display = "block"
+
+        //disabled the "Deal" button
+        document.getElementById("btn_startGame").disabled = true
+        //enabled the "Quit Game"
+        document.getElementById("btn_quitGame").disabled = false
+        //disappear the card back image on deck 
+        let game_deck_card_back_img = document.getElementById("game_deck_card_back_img")
+        game_deck_card_back_img.style.visibility = "hidden"  
+
+        
+        GameManage.DisplayTipInfo("Click on your top card to play it")
+    }
+
     //deal the cards to players
     static DealCardsToPlayers(gameDeck, gameOpponent, gameSelf){
         let cards = gameDeck.cards
@@ -154,17 +211,17 @@ class GameManage{
         this.DisplayCardsCount(sourceCardsCntElementId,sourceCards.length)
     }
 
-    //display card image on page
+    //display card image on game page
     static DisplayCardImage(displayCardImgElementId, imgUrl){
         document.getElementById(displayCardImgElementId).setAttribute("src", imgUrl)
     }
 
-    //remove cards image on page
+    //remove cards image on game page
     static RemoveCardImages(removeCardImgElementIdList){
         removeCardImgElementIdList.forEach(removeCardImgElementId=>document.getElementById(removeCardImgElementId).setAttribute("src",""))   
     }
 
-    //display cards count on page
+    //display cards count on game page
     static DisplayCardsCount(displayCardsCountElementId, cardsCount){
         let displayCardsCountElement = document.getElementById(displayCardsCountElementId)
         displayCardsCountElement.innerText = cardsCount>0 ? cardsCount : ""
@@ -245,7 +302,7 @@ function init(){
     //generate the players
     generatePlayers()
 
-    //put all cards on the deck, just show the hidden card image on deck
+    //put all cards on the deck, just show the image of card back on deck
     GameManage.DisplayCardImage("game_deck_card_back_img",CardBackImgUrl)
 }
 
@@ -253,65 +310,19 @@ function init(){
 //generate two game players
 function generatePlayers(){
     //generate two game players
-    // opponent.name = "Opponent"
+    //the default name of opponent and self, later can edit them on game page before start game
+    opponent.name = "Mick"
     opponent.cards = []
-    document.getElementById("opponent_name").innerText = opponent.name
-    // self.name = "You"
+    self.name = "Jack"
     self.cards = []
-    document.getElementById("self_name").innerText = self.name
 }
 
 
 //start the game
 function startGame(){
-    //get the speed value to set timeout value
-    let speedRadios = document.getElementsByName("speed")
-    let speedStr = GameManage.GetRadioCheckedValue(speedRadios)
-    let timeoutIndex = parseInt(speedStr)
-    timeout = TimeOutArray[timeoutIndex]
-
-    //get the mode value
-    let modeRadios = document.getElementsByName("mode")
-    let modeStr = GameManage.GetRadioCheckedValue(modeRadios)
-    mode = parseInt(modeStr)
-
-    //disabled the speed and mode radio options
-    speedRadios.forEach(speed=>speed.disabled = true)
-    modeRadios.forEach(mode=>mode.disabled = true)
-
-    //get the players' name
-    let opponentName = document.getElementById("opponent_name_text").value
-    if(opponentName == null || opponentName.trim() == "" ){
-        opponentName = "Mick"
-    }
-    opponentName = opponentName.trim()
-    opponent.name = opponentName
-
-    let selfName = document.getElementById("self_name_text").value
-    if(selfName == null || selfName.trim() =="" ){
-        selfName = "Jack"
-    }
-    selfName = selfName.trim()
-    self.name = selfName
-
-    let inputname = document.getElementsByName("inputname")
-    inputname.forEach(item=>item.style.display="none")
-    let opponent_name = document.getElementById("opponent_name")
-    opponent_name.innerText = opponent.name.concat(" (Opponent)")
-    opponent_name.style.display = "block"
-    let self_name = document.getElementById("self_name")
-    self_name.innerText = self.name.concat(" (You)")
-    self_name.style.display = "block"
-
-    //disabled the "Deal" button
-    document.getElementById("btn_startGame").disabled = true
-    //enabled the "Quit Game"
-    document.getElementById("btn_quitGame").disabled = false
-    //disappear the hidden 
-    let game_deck_card_back_img = document.getElementById("game_deck_card_back_img")
-    game_deck_card_back_img.style.visibility = "hidden"  
-
-    GameManage.DisplayTipInfo("Click on your top card to play it")
+    
+    //sets the game page's elements properties and game variables before start game
+    GameManage.DoSettingBeforeStartGame()
 
     //deal the cards to two players
     GameManage.DealCardsToPlayers(deck, opponent, self)
