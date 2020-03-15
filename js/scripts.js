@@ -180,10 +180,11 @@ class GameManage{
     }
 
     //console.log the game round info
-    static LogGameRoundInfo(opponetPlayerCard, selfPlayerCard,compareValue){
-        let logInfo = ("[").concat((new Date()).toLocaleString()).concat("] opponent:")
-            .concat(opponetPlayerCard.suit).concat(" ").concat(opponetPlayerCard.rank).concat(", ")
-            .concat("self:").concat(selfPlayerCard.suit).concat(" ").concat(selfPlayerCard.rank).concat(". ")
+    static LogGameRoundInfo(opponetPlayerCard, opponetCardsCnt, selfPlayerCard, selfCardsCnt,compareValue){
+        let logInfo = (new Date().toLocaleString()).concat(" opponent:")
+            .concat(opponetPlayerCard.suit).concat(" ").concat(opponetPlayerCard.rank).concat(", has ").concat(opponetCardsCnt)
+            .concat(" cards now. ").concat("self:").concat(selfPlayerCard.suit).concat(" ").concat(selfPlayerCard.rank).concat(", has ")
+            .concat(selfCardsCnt).concat(" cards now. ")
         if(compareValue>0){
             logInfo = logInfo.concat("Opponent win!")
         }else if(compareValue<0){
@@ -247,10 +248,10 @@ function init(){
 //generate two game players
 function generatePlayers(){
     //generate two game players
-    opponent.name = "Opponent"
+    // opponent.name = "Opponent"
     opponent.cards = []
     document.getElementById("opponent_name").innerText = opponent.name
-    self.name = "You"
+    // self.name = "You"
     self.cards = []
     document.getElementById("self_name").innerText = self.name
 }
@@ -264,14 +265,38 @@ function startGame(){
     let timeoutIndex = parseInt(speedStr)
     timeout = TimeOutArray[timeoutIndex]
 
+    //get the mode value
     let modeRadios = document.getElementsByName("mode")
     let modeStr = GameManage.GetRadioCheckedValue(modeRadios)
     mode = parseInt(modeStr)
 
     //disabled the speed and mode radio options
     speedRadios.forEach(speed=>speed.disabled = true)
-    
     modeRadios.forEach(mode=>mode.disabled = true)
+
+    //get the players' name
+    let opponentName = document.getElementById("opponent_name_text").value
+    if(opponentName == null || opponentName.trim() == "" ){
+        opponentName = "Mick"
+    }
+    opponentName = opponentName.trim()
+    opponent.name = opponentName
+
+    let selfName = document.getElementById("self_name_text").value
+    if(selfName == null || selfName.trim() =="" ){
+        selfName = "Jack"
+    }
+    selfName = selfName.trim()
+    self.name = selfName
+
+    let inputname = document.getElementsByName("inputname")
+    inputname.forEach(item=>item.style.display="none")
+    let opponent_name = document.getElementById("opponent_name")
+    opponent_name.innerText = opponent.name.concat(" (Opponent)")
+    opponent_name.style.display = "block"
+    let self_name = document.getElementById("self_name")
+    self_name.innerText = self.name.concat(" (You)")
+    self_name.style.display = "block"
 
     //disabled the "Deal" button
     document.getElementById("btn_startGame").disabled = true
@@ -318,10 +343,12 @@ function compare(){
     let self_topcard_ondeck = GameManage.GetLastCard(self.cardsOnDeck)
     if(opponent_topcard_ondeck.score>0 && self_topcard_ondeck.score>0){
         let compareValue = GameManage.CompareCardsScore(opponent_topcard_ondeck,self_topcard_ondeck)
-        GameManage.LogGameRoundInfo(opponent_topcard_ondeck,self_topcard_ondeck,compareValue)
+        
         if(compareValue>0){
             GameManage.ShiftCardsToPlayer(self.cardsOnDeck,opponent.cards,"game_deck_self_cards_count","opponent_deck_cards_count")
             GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,opponent.cards,"game_deck_opponent_cards_count","opponent_deck_cards_count")
+            GameManage.LogGameRoundInfo(opponent_topcard_ondeck,opponent.cards.length+opponent.cardsOnDeck.length,
+                self_topcard_ondeck,self.cards.length+self.cardsOnDeck.length,compareValue)
             setTimeout(function() {
             GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
                     },timeout)
@@ -342,6 +369,8 @@ function compare(){
         }else if(compareValue<0){
             GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,self.cards,"game_deck_opponent_cards_count","self_deck_cards_count")
             GameManage.ShiftCardsToPlayer(self.cardsOnDeck,self.cards,"game_deck_self_cards_count","self_deck_cards_count")
+            GameManage.LogGameRoundInfo(opponent_topcard_ondeck,opponent.cards.length+opponent.cardsOnDeck.length,
+                self_topcard_ondeck,self.cards.length+self.cardsOnDeck.length,compareValue)
             setTimeout(function() {
                     GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
                     },timeout)
@@ -363,6 +392,8 @@ function compare(){
             //it's war in the round
             alert("war");
             isWar = true;
+            GameManage.LogGameRoundInfo(opponent_topcard_ondeck,opponent.cards.length+opponent.cardsOnDeck.length,
+                self_topcard_ondeck,self.cards.length+self.cardsOnDeck.length,compareValue)
             if(opponent.cards.length<DrawCardsCountWhenWar || self.cards.length<DrawCardsCountWhenWar){
                 isGameOver = true
                 if(opponent.cards.length<DrawCardsCountWhenWar){
