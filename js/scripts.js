@@ -302,6 +302,12 @@ class GameManage{
         document.getElementById("gameTips").value = tipInfo
     }
 
+    //display the game result on game page
+    static DisplayGameResult(resultInfo){
+        document.getElementById("game_result").style.display = "block" 
+        document.getElementById("game_result").innerHTML = resultInfo
+    }
+
     //display the new game button when game is over
     static DisplayNewGameButton(){
         document.getElementById("btn_quitGame").style.display = "none"
@@ -442,15 +448,19 @@ function compare(){
                         GameManage.RemoveCardImages(["opponent_deck_card_img","opponent_deck_show_card_img"])
                     }
                     GameManage.DisplayTipInfo("WoW...you win the game")
-                    console.log(opponent.name + "(Opponent) has not enough cards to play the war. " + self.name + "(You) win the game!")
-                    alert(self.name + "(You) win the game!")
+                    let resultInfo = opponent.name + "(Opponent) has not enough cards to play the war. " + self.name + "(You) win the game!"
+                    console.log(resultInfo)
+                    resultInfo = opponent.name + " has not enough cards to play the war. <br />" + self.name + "(You) win the game!"
+                    GameManage.DisplayGameResult(resultInfo)
                 }else{
                     if(self.cards.length==0){
                         GameManage.RemoveCardImages(["self_deck_show_card_img","self_deck_card_img"])
                     }
                     GameManage.DisplayTipInfo("You have no more cards to play the war. Opponent win the game")
-                    console.log(self.name + "(You) has not enough cards to play the war. " + opponent.name + "(Opponent) win the game!")
-                    alert(opponent.name + "(Opponent) win the game")
+                    let resultInfo = self.name + "(You) has not enough cards to play the war. " + opponent.name + "(Opponent) win the game!"
+                    console.log(resultInfo)
+                    resultInfo = self.name + " has not enough cards to play the war. <br />" + opponent.name + "(Opponent) win the game!"
+                    GameManage.DisplayGameResult(resultInfo)
                 }
                 GameManage.DisplayNewGameButton()
             }else{
@@ -489,9 +499,9 @@ function compare(){
                 if(self.cards.length==0){
                     GameManage.RemoveCardImages(["self_deck_show_card_img","self_deck_card_img"])
                     GameManage.DisplayTipInfo("you lose the game")
-                    console.log("Opponent win the game")
-                    console.log(opponent.name + "(Opponent) win the game!")
-                    alert(opponent.name + "(Opponent) win the game")
+                    let resultInfo = opponent.name + "(Opponent) win the game!"
+                    console.log(resultInfo)
+                    GameManage.DisplayGameResult(resultInfo)
                     isGameOver = true
                     GameManage.DisplayNewGameButton()
                 }else{
@@ -526,8 +536,9 @@ function compare(){
                 if(opponent.cards.length == 0){
                     GameManage.RemoveCardImages(["opponent_deck_card_img","opponent_deck_show_card_img"])
                     GameManage.DisplayTipInfo("WoW...you win the game")
-                    console.log(self.name + "(You) win the game1")
-                    alert(self.name + "(You) win the game!")
+                    let resultInfo = self.name + "(You) win the game!"
+                    console.log(resultInfo)
+                    GameManage.DisplayGameResult(resultInfo)
                     isGameOver = true
                     GameManage.DisplayNewGameButton()
                 }else{
