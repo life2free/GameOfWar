@@ -450,7 +450,7 @@ function compare(){
                     GameManage.DisplayTipInfo("WoW...you win the game")
                     let resultInfo = opponent.name + "(Opponent) has not enough cards to play the war. " + self.name + "(You) win the game!"
                     console.log(resultInfo)
-                    resultInfo = opponent.name + " has not enough cards to play the war. <br />" + self.name + "(You) win the game!"
+                    resultInfo = opponent.name + " has not enough cards to play the war. <br />" + self.name + " win the game!"
                     GameManage.DisplayGameResult(resultInfo)
                 }else{
                     if(self.cards.length==0){
@@ -459,7 +459,7 @@ function compare(){
                     GameManage.DisplayTipInfo("You have no more cards to play the war. Opponent win the game")
                     let resultInfo = self.name + "(You) has not enough cards to play the war. " + opponent.name + "(Opponent) win the game!"
                     console.log(resultInfo)
-                    resultInfo = self.name + " has not enough cards to play the war. <br />" + opponent.name + "(Opponent) win the game!"
+                    resultInfo = self.name + " has not enough cards to play the war. <br />" + opponent.name + " win the game!"
                     GameManage.DisplayGameResult(resultInfo)
                 }
                 GameManage.DisplayNewGameButton()
