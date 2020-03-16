@@ -366,7 +366,7 @@ class GameManage{
      * @param {String} removeCardImgElementIdList - the id list of the elements which display the images that will be disappeared
      */
     static RemoveCardImages(removeCardImgElementIdList){
-        removeCardImgElementIdList.forEach(removeCardImgElementId=>document.getElementById(removeCardImgElementId).setAttribute("src",""))   
+        removeCardImgElementIdList.forEach(removeCardImgElementId=>document.getElementById(removeCardImgElementId).setAttribute("src",""))
     }
 
 
