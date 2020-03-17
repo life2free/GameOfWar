@@ -36,12 +36,12 @@
             <div class="player_info">
                 <img class="player_photo" src="./img/photo1.png">
                 <p id="opponent_name" class="player_name" style="display: none;"></p>
-                <div name="inputname" class="inputname"><span class="inputname">Opponent's name: </span><input id="opponent_name_text" class="player_name_text" type="text" placeholder="Mick" maxlength="15"></div>
+                <div name="inputname"><span class="inputname">Opponent's name: </span><input id="opponent_name_text" class="player_name_text" type="text" placeholder="Mick" maxlength="15"></div>
             </div>
             <p class="opponent_deck_cards_count" id="opponent_deck_cards_count"></p>
             <div id="opponent_deck" class="player_deck">
-                <img id="opponent_deck_card_img" class="player_card_img" src="" alt="">
-                <img id="opponent_deck_show_card_img" class="player_card_img" src="" alt="">
+                <img id="opponent_deck_originstack_img" class="player_card_img" src="" alt="">
+                <img id="opponent_deck_winstack_img" class="player_card_img" src="" alt="">
             </div>
             
             <div id="game_deck" class="game_deck">
@@ -53,8 +53,8 @@
             </div>
             <div id="game_result" class="game_result" style="display: none;"></div>
             <div id="self_deck" class="player_deck">
-                <img id="self_deck_show_card_img" class="player_card_img" src="" alt="">
-                <img id="self_deck_card_img" class="player_card_img" src="" alt="">
+                <img id="self_deck_winstack_img" class="player_card_img" src="" alt="">
+                <img id="self_deck_originstack_img" class="player_card_img" src="" alt="">
             </div>
             <p class="self_deck_cards_count" id="self_deck_cards_count"></p>
             <div class="player_info">

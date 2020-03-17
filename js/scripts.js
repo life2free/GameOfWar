@@ -165,15 +165,19 @@ class Card{
  * the game player
  * @class Player
  * @property {String} name - the player's name
- * @property {Array} cards - stores the cards which the player hold (exclude the cards which be drew to deck to compare)
+ * @property {Array} cardsOnOriginStack - stores the cards which the player origin hold (exclude the cards which be drew to deck to compare)
+ * @property {Array} cardsOnWinStack - stores the cards which be shift from deck to the player when the player win 
  * @property {Array} cardsOnDeck - stores the cards which be drew to deck to compare
+ * @property {num} cardsCountOnStack - stores the cards which be drew to deck to compare
  * @constructs
  */
 class Player{
     constructor(){
         this.name = "",
-        this.cards = []
+        this.cardsOnOriginStack = []
+        this.cardsOnWinStack = []
         this.cardsOnDeck = []
+        this.cardsCountOnStack = 0
     }
 }
 
@@ -211,23 +215,13 @@ class GameManage{
         mode = parseInt(modeStr)
 
         // disabled the speed and mode radio options
-        speedRadios.forEach(speed=>speed.disabled = true)
-        modeRadios.forEach(mode=>mode.disabled = true)
+        speedRadios.forEach(speedRadio=>speedRadio.disabled = true)
+        modeRadios.forEach(modeRadio=>modeRadio.disabled = true)
 
-        // get the players' name from the page
-        let opponentName = document.getElementById("opponent_name_text").value
-        if(opponentName == null || opponentName.trim() == "" ){
-            opponentName = "Mick"
-        }
-        opponentName = opponentName.trim()
-        opponent.name = opponentName
+        // set the players' name from the page
+        this.SetPlayerNameFromPage(opponent, "opponent_name_text", "Mick")
+        this.SetPlayerNameFromPage(self, "self_name_text", "Jack")
 
-        let selfName = document.getElementById("self_name_text").value
-        if(selfName == null || selfName.trim() =="" ){
-            selfName = "Jack"
-        }
-        selfName = selfName.trim()
-        self.name = selfName
 
         // disappear the players' name text elements on the game page 
         let inputname = document.getElementsByName("inputname")
@@ -255,12 +249,31 @@ class GameManage{
             //if it's manual mode
             this.DisplayTipInfo("Click on your top card to play it")
             //add the listener clickDrawCardToDeck() for clicking the self player's card
-            document.getElementById("self_deck_card_img").addEventListener("click", clickDrawCardToDeck)
+            document.getElementById("self_deck_originstack_img").addEventListener("click", clickDrawCardToDeck)
         }else{
             //if it's automatic mode, disappear the gameTips element on game page
             document.getElementById("gameTips").style.visibility = "hidden" 
         }
     }
+
+
+    /**
+     * set the players' name from the page
+     * @method SetPlayerNameFromPage
+     * @static
+     * @param {Object} gamePlayer - the game player
+     * @param {String} playerNameElementId - the id of html element which display the player's name
+     * @param {String} defaultName - the default name for player, if the player didn't type the name, then use this value
+     */
+    static SetPlayerNameFromPage(gamePlayer, playerNameElementId, defaultName){
+        let playerName = document.getElementById(playerNameElementId).value
+        if(playerName == null || playerName.trim() == "" ){
+            playerName = defaultName
+        }
+        playerName = playerName.trim()
+        gamePlayer.name = playerName
+    }
+
 
     /**
      * deal the cards to players, then each player has 26 cards
@@ -273,15 +286,17 @@ class GameManage{
     static DealCardsToPlayers(gameDeck, gameOpponent, gameSelf){
         let cards = gameDeck.cards
         for(let i=0; i<CardTotalCounts/2; i++){
-            gameOpponent.cards.push(cards[2*i])
-            gameSelf.cards.push(cards[2*i + 1])
+            gameOpponent.cardsOnOriginStack.push(cards[2*i])
+            gameSelf.cardsOnOriginStack.push(cards[2*i + 1])
         }
+        gameOpponent.cardsCountOnStack = gameOpponent.cardsOnOriginStack.length
+        gameSelf.cardsCountOnStack = gameSelf.cardsOnOriginStack.length
 
         // display the card back image and counts on game page for two players
-        this.DisplayCardImage("opponent_deck_card_img", CardBackImgUrl)
-        this.DisplayCardsCount("opponent_deck_cards_count",gameOpponent.cards.length)
-        this.DisplayCardImage("self_deck_card_img", CardBackImgUrl)  
-        this.DisplayCardsCount("self_deck_cards_count",gameSelf.cards.length)
+        this.DisplayCardImage("opponent_deck_originstack_img", CardBackImgUrl)
+        this.DisplayCardsCount("opponent_deck_cards_count",gameOpponent.cardsCountOnStack)
+        this.DisplayCardImage("self_deck_originstack_img", CardBackImgUrl)  
+        this.DisplayCardsCount("self_deck_cards_count",gameSelf.cardsCountOnStack)
     }
 
 
@@ -297,8 +312,9 @@ class GameManage{
      */
     static DrawCardToDeck(gamePlayer,showCardImgElementId,playerDeckCardsCntElementId,gameDeckPlayerCardsCntElementId,imgIsUp=1){
         // draw a card from player
-        let card = gamePlayer.cards.shift()
-        this.DisplayCardsCount(playerDeckCardsCntElementId,gamePlayer.cards.length)
+        let card = gamePlayer.cardsOnOriginStack.shift()
+        gamePlayer.cardsCountOnStack -= 1
+        this.DisplayCardsCount(playerDeckCardsCntElementId,gamePlayer.cardsCountOnStack)
         // push the card to deck
         gamePlayer.cardsOnDeck.push(card)
         this.DisplayCardImage(showCardImgElementId, (imgIsUp ? card.imgUrl : CardBackImgUrl))
@@ -335,14 +351,14 @@ class GameManage{
 
     
     /**
-     * when player win the round, then shift the cards from sourceCards to playerCards
-     * @method ShiftCardsToPlayer
+     * shift the cards from sourceCards to targetCards
+     * @method ShiftCards
      * @static
      * @param {Array} sourceCards - the array stored the cards which will be shift to another array
-     * @param {Array} playerCards 
+     * @param {Array} targetCards - 
      */
-    static ShiftCardsToPlayer(sourceCards,playerCards){
-        sourceCards.forEach(item=>playerCards.push(item))
+    static ShiftCards(sourceCards,targetCards){
+        sourceCards.forEach(item=>targetCards.push(item))
         sourceCards.splice(0)
     }
 
@@ -411,9 +427,9 @@ class GameManage{
      */
     static LogGameRoundInfo(opponent,opponetPlayerCard, self, selfPlayerCard,compareValue){
         let opponentName = opponent.name
-        let opponetCardsCnt = opponent.cards.length + opponent.cardsOnDeck.length
+        let opponetCardsCnt = opponent.cardsCountOnStack + opponent.cardsOnDeck.length
         let selfName = self.name
-        let selfCardsCnt = self.cards.length + self.cardsOnDeck.length
+        let selfCardsCnt = self.cardsCountOnStack + self.cardsOnDeck.length
         let logInfo = (new Date().toLocaleString()).concat(" ").concat(opponentName).concat("(Opponent):")
             .concat(opponetPlayerCard.suit).concat(" ").concat(opponetPlayerCard.rank).concat(", has ").concat(opponetCardsCnt)
             .concat(" cards now. ").concat(selfName).concat("(Self):").concat(selfPlayerCard.suit).concat(" ").concat(selfPlayerCard.rank).concat(", has ")
@@ -487,14 +503,14 @@ function init(){
 function generatePlayers(){
     // the default name of opponent and self, later can edit them on game page before start game
     opponent.name = "Mick"
-    opponent.cards = []
+    // opponent.cards = []
     self.name = "Jack"
-    self.cards = []
+    // self.cards = []
 }
 
 
 /**
- * start the game, for manual mod. when self player press the "Deal" button, then invoke this function to start the game
+ * start the game, for manual mode. when self player press the "Deal" button, then invoke this function to start the game
  */
 function startGame(){
     
@@ -626,13 +642,13 @@ function compare(){
             canClickToDrawCardTimes = DrawCardsCountWhenWar
             // print the round information to console
             GameManage.LogGameRoundInfo(opponent,opponent_topcard_ondeck,self,self_topcard_ondeck,compareValue)
-            if(opponent.cards.length<DrawCardsCountWhenWar || self.cards.length<DrawCardsCountWhenWar){
+            if(opponent.cardsCountOnStack<DrawCardsCountWhenWar || self.cardsCountOnStack<DrawCardsCountWhenWar){
                 // if one of the player has not enough cards to play the war, the game is over
                 isGameOver = true
                 // check which player has not enough cards
-                if(opponent.cards.length<DrawCardsCountWhenWar){
-                    if(opponent.cards.length == 0){
-                        GameManage.RemoveCardImages(["opponent_deck_card_img","opponent_deck_show_card_img"])
+                if(opponent.cardsCountOnStack<DrawCardsCountWhenWar){
+                    if(opponent.cardsCountOnStack == 0){
+                        GameManage.RemoveCardImages(["opponent_deck_originstack_img","opponent_deck_winstack_img"])
                     }
                     GameManage.DisplayTipInfo("WoW...you win the game")
                     let resultInfo = opponent.name + "(Opponent) has not enough cards to play the war. " + self.name + "(You) win the game!"
@@ -640,8 +656,8 @@ function compare(){
                     resultInfo = opponent.name + " has not enough cards to play the war. <br />" + self.name + " win the game!"
                     GameManage.DisplayGameResult(resultInfo)
                 }else{
-                    if(self.cards.length==0){
-                        GameManage.RemoveCardImages(["self_deck_show_card_img","self_deck_card_img"])
+                    if(self.cardsCountOnStack==0){
+                        GameManage.RemoveCardImages(["self_deck_winstack_img","self_deck_originstack_img"])
                     }
                     GameManage.DisplayTipInfo("You have no more cards to play the war. Opponent win the game")
                     let resultInfo = self.name + "(You) has not enough cards to play the war. " + opponent.name + "(Opponent) win the game!"
@@ -651,6 +667,19 @@ function compare(){
                 }
                 GameManage.DisplayNewGameButton()
             }else{
+                // check the count of cards on originstack are enough for war round or not (4 cards)
+                if(opponent.cardsOnOriginStack.length<DrawCardsCountWhenWar){
+                    // shift the cards from winstack to originstack for opponent player
+                    GameManage.ShiftCards(opponent.cardsOnWinStack, opponent.cardsOnOriginStack)
+                    GameManage.RemoveCardImages(["opponent_deck_winstack_img"])
+                }
+
+                if(self.cardsOnOriginStack.length<DrawCardsCountWhenWar){
+                    // shift the cards from winstack to originstack for self player
+                    GameManage.ShiftCards(self.cardsOnWinStack, self.cardsOnOriginStack)
+                    GameManage.RemoveCardImages(["self_deck_winstack_img"])
+                }
+
                 if(!mode){
                     /**
                      * in manual mode, both players has enough cards to player the war round,
@@ -667,8 +696,9 @@ function compare(){
             isWar = false
             if(compareValue>0){
                 // opponent player win in the round, shift the cards on the deck to ooponent player
-                GameManage.ShiftCardsToPlayer(self.cardsOnDeck,opponent.cards)
-                GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,opponent.cards)
+                GameManage.ShiftCards(self.cardsOnDeck,opponent.cardsOnWinStack)
+                GameManage.ShiftCards(opponent.cardsOnDeck,opponent.cardsOnWinStack)
+                opponent.cardsCountOnStack = opponent.cardsOnOriginStack.length + opponent.cardsOnWinStack.length
                 
                 GameManage.LogGameRoundInfo(opponent,opponent_topcard_ondeck,self,self_topcard_ondeck,compareValue)
                 let timeoutValue = timeout
@@ -678,20 +708,20 @@ function compare(){
 
                 setTimeout(function() {
                     // display the count of cards on deck and the opponent player
-                    GameManage.DisplayCardsCount("game_deck_self_cards_count",self.cardsOnDeck.length)
-                    GameManage.DisplayCardsCount("game_deck_opponent_cards_count",opponent.cardsOnDeck.length)
-                    GameManage.DisplayCardsCount("opponent_deck_cards_count",opponent.cards.length)
+                    GameManage.DisplayCardsCount("game_deck_self_cards_count",0)
+                    GameManage.DisplayCardsCount("game_deck_opponent_cards_count",0)
+                    GameManage.DisplayCardsCount("opponent_deck_cards_count",opponent.cardsCountOnStack)
 
                     // remove the images of the cards on deck
                     GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
-                    let opponent_deck_show_card_img = document.getElementById("opponent_deck_show_card_img")
-                    opponent_deck_show_card_img.setAttribute("src",opponent_topcard_ondeck.imgUrl)
+                    let opponent_deck_winstack_img = document.getElementById("opponent_deck_winstack_img")
+                    opponent_deck_winstack_img.setAttribute("src",opponent_topcard_ondeck.imgUrl)
                     canClickToDrawCardTimes = 1
                 },timeoutValue)
 
-                if(self.cards.length==0){
+                if(self.cardsCountOnStack==0){
                     // opponent player win in the game
-                    GameManage.RemoveCardImages(["self_deck_show_card_img","self_deck_card_img"])
+                    GameManage.RemoveCardImages(["self_deck_winstack_img","self_deck_originstack_img"])
                     GameManage.DisplayTipInfo("you lose the game")
                     let resultInfo = opponent.name + "(Opponent) win the game!"
                     console.log(resultInfo)
@@ -699,6 +729,19 @@ function compare(){
                     isGameOver = true
                     GameManage.DisplayNewGameButton()
                 }else{
+                    // check the count of cards on originstack are enough for war round or not (4 cards)
+                    if(opponent.cardsOnOriginStack.length == 0){
+                        // shift the cards from winstack to originstack for opponent player
+                        GameManage.ShiftCards(opponent.cardsOnWinStack, opponent.cardsOnOriginStack)
+                        GameManage.RemoveCardImages(["opponent_deck_winstack_img"])
+                    }
+
+                    if(self.cardsOnOriginStack.length == 0){
+                        // shift the cards from winstack to originstack for self player
+                        GameManage.ShiftCards(self.cardsOnWinStack, self.cardsOnOriginStack)
+                        GameManage.RemoveCardImages(["self_deck_winstack_img"])
+                    }
+
                     if(!mode){
                         setTimeout(function() {
                             autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
@@ -707,8 +750,9 @@ function compare(){
                 }
             }else{
                 // self player win in the round, shift the cards on the deck to self player
-                GameManage.ShiftCardsToPlayer(opponent.cardsOnDeck,self.cards)
-                GameManage.ShiftCardsToPlayer(self.cardsOnDeck,self.cards)
+                GameManage.ShiftCards(opponent.cardsOnDeck,self.cardsOnWinStack)
+                GameManage.ShiftCards(self.cardsOnDeck,self.cardsOnWinStack)
+                self.cardsCountOnStack = self.cardsOnOriginStack.length + self.cardsOnWinStack.length
                 
                 GameManage.LogGameRoundInfo(opponent,opponent_topcard_ondeck,self,self_topcard_ondeck,compareValue)
                 let timeoutValue = timeout
@@ -717,18 +761,18 @@ function compare(){
                 }
 
                 setTimeout(function() {
-                    GameManage.DisplayCardsCount("game_deck_self_cards_count",self.cardsOnDeck.length)
-                    GameManage.DisplayCardsCount("game_deck_opponent_cards_count",opponent.cardsOnDeck.length)
-                    GameManage.DisplayCardsCount("self_deck_cards_count",self.cards.length)
+                    GameManage.DisplayCardsCount("game_deck_self_cards_count", 0)
+                    GameManage.DisplayCardsCount("game_deck_opponent_cards_count", 0)
+                    GameManage.DisplayCardsCount("self_deck_cards_count",self.cardsCountOnStack)
                     GameManage.RemoveCardImages(["opponent_card_img","self_card_img"])
-                    let self_deck_show_card_img = document.getElementById("self_deck_show_card_img")
-                    self_deck_show_card_img.setAttribute("src",self_topcard_ondeck.imgUrl)
+                    let self_deck_winstack_img = document.getElementById("self_deck_winstack_img")
+                    self_deck_winstack_img.setAttribute("src",self_topcard_ondeck.imgUrl)
                     canClickToDrawCardTimes = 1
                 },timeoutValue)
                 
-                if(opponent.cards.length == 0){
+                if(opponent.cardsCountOnStack == 0){
                     // self player win in the game
-                    GameManage.RemoveCardImages(["opponent_deck_card_img","opponent_deck_show_card_img"])
+                    GameManage.RemoveCardImages(["opponent_deck_originstack_img","opponent_deck_winstack_img"])
                     GameManage.DisplayTipInfo("WoW...you win the game")
                     let resultInfo = self.name + "(You) win the game!"
                     console.log(resultInfo)
@@ -736,6 +780,18 @@ function compare(){
                     isGameOver = true
                     GameManage.DisplayNewGameButton()
                 }else{
+                    // check the count of cards on originstack are enough for war round or not (4 cards)
+                    if(opponent.cardsOnOriginStack.length == 0){
+                        // shift the cards from winstack to originstack for opponent player
+                        GameManage.ShiftCards(opponent.cardsOnWinStack, opponent.cardsOnOriginStack)
+                        GameManage.RemoveCardImages(["opponent_deck_winstack_img"])
+                    }
+
+                    if(self.cardsOnOriginStack.length == 0){
+                        // shift the cards from winstack to originstack for self player
+                        GameManage.ShiftCards(self.cardsOnWinStack, self.cardsOnOriginStack)
+                        GameManage.RemoveCardImages(["self_deck_winstack_img"])
+                    }
                     if(!mode){
                         setTimeout(function() {
                             autoDrawCardToDeck(opponent,"opponent_card_img","opponent_deck_cards_count","game_deck_opponent_cards_count")
