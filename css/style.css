@@ -80,8 +80,11 @@ hr{
 	margin: 0 10%;
 }
 
-.inputname,.player_name_text{
+.inputname{
 	color: white;
+}
+
+.inputname,.player_name_text{
 	font-size: 14px;
 }
 
