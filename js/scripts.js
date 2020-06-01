@@ -50,7 +50,7 @@ const CardRankArray = [
   "Jack",
   "Queen",
   "King",
-  "Ace"
+  "Ace",
 ];
 
 // the card suit array
@@ -207,7 +207,8 @@ class Card {
  */
 class Player {
   constructor() {
-    (this.name = ""), (this.cardsOnOriginStack = []);
+    this.name = "";
+    this.cardsOnOriginStack = [];
     this.cardsOnWinStack = [];
     this.cardsOnDeck = [];
     this.cardsCountOnStack = 0;
@@ -250,8 +251,8 @@ class GameManage {
     }
 
     // disabled the speed and mode radio options
-    speedRadios.forEach(speedRadio => (speedRadio.disabled = true));
-    modeRadios.forEach(modeRadio => (modeRadio.disabled = true));
+    speedRadios.forEach((speedRadio) => (speedRadio.disabled = true));
+    modeRadios.forEach((modeRadio) => (modeRadio.disabled = true));
 
     // set the players' name from the page
     this.SetPlayerNameFromPage(opponent, opponentNameTextEleId, "Mick");
@@ -259,7 +260,7 @@ class GameManage {
 
     // disappear the players' name text elements on the game page
     let inputname = document.getElementsByName("inputname");
-    inputname.forEach(item => (item.style.display = "none"));
+    inputname.forEach((item) => (item.style.display = "none"));
 
     // display the opponent's name on game page
     let opponent_name = document.getElementById(opponentNameEleId);
@@ -407,7 +408,7 @@ class GameManage {
    * @param {Array} targetCards -
    */
   static ShiftCards(sourceCards, targetCards) {
-    sourceCards.forEach(item => targetCards.push(item));
+    sourceCards.forEach((item) => targetCards.push(item));
     sourceCards.splice(0);
   }
 
@@ -436,7 +437,7 @@ class GameManage {
       compareValue
     );
 
-    setTimeout(function() {
+    setTimeout(function () {
       // display the count of cards on deck and the opponent player
       GameManage.DisplayCardsCount(gameDeckSelfCardsCountEleId, 0);
       GameManage.DisplayCardsCount(gameDeckOppCardsCountEleId, 0);
@@ -465,22 +466,22 @@ class GameManage {
       let resultInfo = "win the game!";
       if (compareValue > 0) {
         // opponent player win in the game
-        setTimeout(function() {
+        setTimeout(function () {
           GameManage.RemoveCardImages([
             selfDeckWinstackImgEleId,
             selfDeckOristackImgEleId,
-            oppDeckWinstackImgEleId
+            oppDeckWinstackImgEleId,
           ]);
         }, lessTimeout);
         this.DisplayTipInfo("you lose the game");
         resultInfo = roundWinPlayer.name + "(Opponent) " + resultInfo;
       } else {
         // self player win in the game
-        setTimeout(function() {
+        setTimeout(function () {
           GameManage.RemoveCardImages([
             oppDeckOristackImgEleId,
             oppDeckWinstackImgEleId,
-            selfDeckWinstackImgEleId
+            selfDeckWinstackImgEleId,
           ]);
         }, lessTimeout);
         this.DisplayTipInfo("WoW...you win the game");
@@ -495,7 +496,7 @@ class GameManage {
       this.CheckOriginStackCardsCount(isWar);
 
       if (!mode) {
-        setTimeout(function() {
+        setTimeout(function () {
           autoDrawCardToDeck(
             opponent,
             oppCardImgEleId,
@@ -554,7 +555,7 @@ class GameManage {
    * @param {String} removeCardImgElementIdList - the id list of the elements which display the images that will be disappeared
    */
   static RemoveCardImages(removeCardImgElementIdList) {
-    removeCardImgElementIdList.forEach(removeCardImgElementId =>
+    removeCardImgElementIdList.forEach((removeCardImgElementId) =>
       document.getElementById(removeCardImgElementId).setAttribute("src", "")
     );
   }
@@ -818,7 +819,7 @@ function autoDrawCardToDeck(
   imgIsUp = 1
 ) {
   // the timeout value is for control the speed
-  setTimeout(function() {
+  setTimeout(function () {
     GameManage.DrawCardToDeck(
       gamePlayer,
       showCardImgElementId,
@@ -860,13 +861,13 @@ function clickDrawCardToDeck() {
       if (canClickToDrawCardTimes === 0) {
         // when self player already drew 1 card in normal round or drew 4 cards in war round,
         // then delay timeout milliseconds to invoke function compare()  to achive controling the speed
-        setTimeout(function() {
+        setTimeout(function () {
           compare();
         }, timeout);
       }
     } else {
       GameManage.DisplayTipInfo("Wait...");
-      setTimeout(function() {
+      setTimeout(function () {
         GameManage.DisplayTipInfo("Click on your top card to play it");
       }, timeout);
     }
@@ -911,7 +912,7 @@ function compare() {
           if (opponent.cardsCountOnStack === 0) {
             GameManage.RemoveCardImages([
               oppDeckOristackImgEleId,
-              oppDeckWinstackImgEleId
+              oppDeckWinstackImgEleId,
             ]);
           }
           GameManage.DisplayTipInfo("WoW...you win the game");
@@ -931,7 +932,7 @@ function compare() {
           if (self.cardsCountOnStack === 0) {
             GameManage.RemoveCardImages([
               selfDeckWinstackImgEleId,
-              selfDeckOristackImgEleId
+              selfDeckOristackImgEleId,
             ]);
           }
           GameManage.DisplayTipInfo(
